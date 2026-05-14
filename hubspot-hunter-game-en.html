@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HubSpot Hunter — Sales Communications</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet">
+  <style>
+    /* ── Design Tokens ── */
+    :root {
+      --sc-green:       #00A354;
+      --sc-black:       #1D1D1F;
+      --sc-gray-10:     #EAEAEB;
+      --sc-gray-30:     #B6B6B8;
+      --sc-gray-50:     #848485;
+      --sc-gray-70:     #515152;
+      --sc-gray-90:     #1D1D1F;
+      --sc-yellow:      #FFD819;
+      --sc-light-green: #D4F0E3;
+      --sc-orange:      #F07A4F;
+
+      --shadow-soft:     0 4px 24px -4px hsl(149 100% 32% / 0.12);
+      --shadow-elevated: 0 16px 48px -12px hsl(240 3% 12% / 0.24);
+      --radius:          1rem;
+
+      --font-heading: 'Playfair Display', Georgia, serif;
+      --font-body:    'Plus Jakarta Sans', system-ui, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--sc-black);
+      font-family: var(--font-body);
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      user-select: none;
+      -webkit-user-select: none;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* ── Grain texture ── */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+      opacity: 0.03;
+      pointer-events: none;
+      z-index: 100;
+    }
+
+    /* ── Gradient orbs ── */
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(80px);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .orb-1 {
+      width: 400px; height: 400px;
+      background: hsl(149 100% 32% / 0.12);
+      top: -120px; left: -100px;
+    }
+    .orb-2 {
+      width: 300px; height: 300px;
+      background: hsl(17 92% 64% / 0.08);
+      bottom: -80px; right: -80px;
+    }
+
+    /* ── Header ── */
+    header {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 860px;
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid hsl(0 0% 100% / 0.06);
+    }
+
+    .logo-sc svg {
+      height: 84px;
+      width: auto;
+      display: block;
+    }
+
+    .game-badge {
+      font-family: var(--font-body);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--sc-gray-50);
+      background: hsl(0 0% 100% / 0.06);
+      border: 1px solid hsl(0 0% 100% / 0.08);
+      padding: 5px 12px;
+      border-radius: 20px;
+    }
+
+    /* ── HUD ── */
+    .hud {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      width: 100%;
+      max-width: 860px;
+      padding: 18px 24px;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .hud-item { text-align: center; flex: 1; }
+
+    .hud-label {
+      font-family: var(--font-body);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--sc-gray-50);
+      margin-bottom: 4px;
+    }
+
+    .hud-value {
+      font-family: var(--font-heading);
+      font-size: 36px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      line-height: 1;
+      transition: color 0.3s;
+    }
+
+    #hud-timer { color: var(--sc-orange); }
+    #hud-score { color: var(--sc-green); }
+    #hud-combo { color: hsl(0 0% 100% / 0.18); }
+    #hud-best  { color: var(--sc-gray-70); }
+
+    .hud-divider {
+      width: 1px;
+      height: 40px;
+      background: hsl(0 0% 100% / 0.07);
+      flex-shrink: 0;
+    }
+
+    /* ── Game area ── */
+    #game-area {
+      position: relative;
+      z-index: 1;
+      width: 812px;
+      height: 460px;
+      background: hsl(240 3% 8%);
+      border: 1px solid hsl(0 0% 100% / 0.07);
+      border-radius: var(--radius);
+      overflow: hidden;
+      cursor: crosshair;
+      box-shadow: var(--shadow-elevated);
+    }
+
+    /* Dot grid */
+    #game-area::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(circle, hsl(0 0% 100% / 0.09) 1px, transparent 1px);
+      background-size: 28px 28px;
+      pointer-events: none;
+    }
+
+    /* ── Target logo ── */
+    #hs-target {
+      position: absolute;
+      width: 72px;
+      height: 72px;
+      cursor: pointer;
+      display: none;
+      z-index: 4;
+      filter: drop-shadow(0 0 10px hsl(17 92% 64% / 0.55));
+      transition: left 0.13s cubic-bezier(.22,.68,0,1.2),
+                  top  0.13s cubic-bezier(.22,.68,0,1.2);
+    }
+
+    #hs-target img { width: 100%; height: 100%; object-fit: contain; }
+    #hs-target:hover { filter: drop-shadow(0 0 18px hsl(17 92% 64% / 0.85)); }
+
+    @keyframes pop {
+      0%   { transform: scale(1.45); }
+      60%  { transform: scale(0.95); }
+      100% { transform: scale(1); }
+    }
+    .target-pop { animation: pop 0.22s cubic-bezier(.34,1.56,.64,1); }
+
+    /* ── Overlays ── */
+    .overlay {
+      position: absolute;
+      inset: 0;
+      border-radius: calc(var(--radius) - 1px);
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      text-align: center;
+      padding: 36px 48px;
+      background: hsl(240 3% 7% / 0.96);
+      backdrop-filter: blur(2px);
+    }
+
+    .overlay.hidden { display: none; }
+
+    .overlay-eyebrow {
+      font-family: var(--font-body);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--sc-green);
+    }
+
+    .overlay h2 {
+      font-family: var(--font-heading);
+      font-size: 42px;
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      line-height: 1.05;
+      color: #fff;
+    }
+
+    .overlay .tagline {
+      font-family: var(--font-body);
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--sc-gray-30);
+      max-width: 420px;
+      line-height: 1.6;
+      letter-spacing: -0.01em;
+    }
+
+    /* ── Instruction cards ── */
+    .instructions {
+      display: flex;
+      gap: 10px;
+      margin: 4px 0;
+    }
+
+    .instr-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 16px;
+      background: hsl(0 0% 100% / 0.04);
+      border: 1px solid hsl(0 0% 100% / 0.08);
+      border-radius: calc(var(--radius) - 2px);
+      width: 160px;
+    }
+
+    .instr-icon {
+      font-size: 24px;
+      line-height: 1;
+    }
+
+    .instr-title {
+      font-family: var(--font-body);
+      font-size: 12px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: -0.01em;
+    }
+
+    .instr-desc {
+      font-family: var(--font-body);
+      font-size: 11px;
+      font-weight: 400;
+      color: var(--sc-gray-50);
+      line-height: 1.5;
+    }
+
+    .instr-card.highlight {
+      border-color: hsl(149 100% 32% / 0.25);
+      background: hsl(149 100% 32% / 0.07);
+    }
+
+    .instr-card.highlight .instr-title { color: var(--sc-green); }
+
+    .tip-pill {
+      font-family: var(--font-body);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--sc-orange);
+      background: hsl(17 92% 64% / 0.1);
+      border: 1px solid hsl(17 92% 64% / 0.2);
+      padding: 6px 14px;
+      border-radius: 20px;
+      letter-spacing: -0.01em;
+    }
+
+    /* ── Buttons ── */
+    .btn {
+      font-family: var(--font-body);
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: #fff;
+      background: var(--sc-green);
+      border: none;
+      border-radius: calc(var(--radius) - 4px);
+      padding: 14px 36px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: background 0.15s, transform 0.12s, box-shadow 0.15s;
+      box-shadow: 0 0 0 0 hsl(149 100% 32% / 0);
+      margin-top: 4px;
+    }
+
+    .btn:hover {
+      background: #00bb60;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px -6px hsl(149 100% 32% / 0.45);
+    }
+
+    .btn:active { transform: translateY(0); }
+
+    /* ── Results cards (glass) ── */
+    .results-row {
+      display: flex;
+      gap: 12px;
+      margin: 4px 0;
+    }
+
+    .r-card {
+      padding: 16px 22px;
+      background: hsl(0 0% 100% / 0.05);
+      border: 1px solid hsl(0 0% 100% / 0.1);
+      border-radius: calc(var(--radius) - 2px);
+      backdrop-filter: blur(16px);
+      min-width: 118px;
+      text-align: center;
+    }
+
+    .r-card.hero {
+      background: hsl(149 100% 32% / 0.1);
+      border-color: hsl(149 100% 32% / 0.3);
+      box-shadow: 0 0 32px -8px hsl(149 100% 32% / 0.2);
+    }
+
+    .r-label {
+      font-family: var(--font-body);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--sc-gray-50);
+      margin-bottom: 8px;
+    }
+
+    .r-value {
+      font-family: var(--font-heading);
+      font-size: 32px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: #fff;
+    }
+
+    .r-card.hero .r-value { color: var(--sc-green); }
+
+    .r-delta {
+      font-family: var(--font-body);
+      font-size: 12px;
+      font-weight: 700;
+      margin-top: 5px;
+    }
+    .r-delta.up   { color: var(--sc-green); }
+    .r-delta.down { color: #FF5C5C; }
+    .r-delta.same { color: var(--sc-gray-70); }
+
+    /* ── New record badge ── */
+    .record-badge {
+      font-family: var(--font-body);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--sc-black);
+      background: var(--sc-yellow);
+      padding: 5px 14px;
+      border-radius: 20px;
+    }
+
+    /* ── Score popups ── */
+    .popup {
+      position: absolute;
+      font-family: var(--font-heading);
+      font-weight: 800;
+      pointer-events: none;
+      z-index: 6;
+      animation: popup-rise 0.75s ease-out forwards;
+    }
+    .popup.pts   { font-size: 24px; color: var(--sc-green); letter-spacing: -0.02em; }
+    .popup.combo { font-size: 13px; color: var(--sc-yellow); font-family: var(--font-body); font-weight: 700; letter-spacing: 0.04em; }
+    .popup.congrats {
+      font-size: 18px;
+      color: #fff;
+      font-family: var(--font-heading);
+      text-shadow: 0 2px 12px hsl(149 100% 32% / 0.5);
+    }
+    .popup.miss-msg {
+      font-size: 13px;
+      color: #FF7A7A;
+      font-family: var(--font-body);
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+
+    @keyframes popup-rise {
+      0%   { opacity: 1; transform: translateY(0) scale(1); }
+      50%  { opacity: 1; }
+      100% { opacity: 0; transform: translateY(-60px) scale(0.75); }
+    }
+
+    @keyframes popup-miss {
+      0%   { opacity: 1; transform: translateY(0); }
+      30%  { opacity: 1; }
+      100% { opacity: 0; transform: translateY(30px); }
+    }
+    .popup.miss-msg { animation: popup-miss 1s ease-out forwards; }
+
+    /* ── Combo HUD colors ── */
+    .combo-x2  { color: var(--sc-orange) !important; }
+    .combo-x3  { color: var(--sc-yellow) !important; }
+    .combo-big {
+      color: var(--sc-yellow) !important;
+      text-shadow: 0 0 16px hsl(54 100% 55% / 0.5);
+    }
+
+    /* ── Timer urgency ── */
+    @keyframes pulse-urgent {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.65; }
+    }
+    .timer-urgent { animation: pulse-urgent 0.5s infinite; color: #FF5C5C !important; }
+
+    /* ── Miss flash ── */
+    @keyframes miss-flash {
+      0%   { box-shadow: inset 0 0 0 2px hsl(0 80% 60% / 0.5); }
+      100% { box-shadow: inset 0 0 0 2px hsl(0 80% 60% / 0); }
+    }
+    .area-miss { animation: miss-flash 0.35s ease-out; }
+
+    /* ── Timer progress bar ── */
+    .timer-bar-track {
+      width: 100%;
+      height: 3px;
+      background: hsl(0 0% 100% / 0.07);
+      border-radius: 2px;
+      margin-top: 8px;
+      overflow: hidden;
+    }
+    #timer-bar-fill {
+      height: 100%;
+      width: 100%;
+      background: var(--sc-green);
+      border-radius: 2px;
+      transition: width 0.95s linear, background 0.4s;
+    }
+
+    /* ── Countdown escape ring ── */
+
+    /* ── First-click tooltip ── */
+    #first-hint {
+      position: absolute;
+      bottom: calc(100% + 10px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: #fff;
+      color: var(--sc-black);
+      font-family: var(--font-body);
+      font-size: 12px;
+      font-weight: 700;
+      padding: 5px 11px;
+      border-radius: 6px;
+      white-space: nowrap;
+      pointer-events: none;
+      display: none;
+      animation: hint-bob 0.55s ease-in-out infinite alternate;
+    }
+    #first-hint::after {
+      content: '';
+      position: absolute;
+      top: 100%; left: 50%;
+      transform: translateX(-50%);
+      border: 5px solid transparent;
+      border-top-color: #fff;
+    }
+    @keyframes hint-bob {
+      from { transform: translateX(-50%) translateY(0); }
+      to   { transform: translateX(-50%) translateY(-5px); }
+    }
+
+    /* ── In-game hint strip (ticker) ── */
+    #ingame-hints {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 32px;
+      display: none;
+      align-items: center;
+      overflow: hidden;
+      background: hsl(240 3% 8% / 0.96);
+      border-top: 1px solid hsl(0 0% 100% / 0.07);
+      z-index: 3;
+      pointer-events: none;
+    }
+    #ingame-hints.visible { display: flex; }
+
+    /* Fade masks at edges */
+    #ingame-hints::before,
+    #ingame-hints::after {
+      content: '';
+      position: absolute;
+      top: 0; bottom: 0;
+      width: 48px;
+      z-index: 1;
+      pointer-events: none;
+    }
+    #ingame-hints::before {
+      left: 0;
+      background: linear-gradient(to right, hsl(240 3% 8%) 30%, transparent);
+    }
+    #ingame-hints::after {
+      right: 0;
+      background: linear-gradient(to left, hsl(240 3% 8%) 30%, transparent);
+    }
+
+    .hint-track {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      white-space: nowrap;
+      animation: ticker-scroll 22s linear infinite;
+      will-change: transform;
+    }
+    @keyframes ticker-scroll {
+      0%   { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
+    .hint-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-family: var(--font-body);
+      font-size: 11.5px;
+      color: hsl(240 2% 58%);
+      white-space: nowrap;
+      padding: 0 28px;
+    }
+    .hint-item b {
+      font-weight: 700;
+      color: hsl(0 0% 82%);
+    }
+    .hint-sep {
+      display: inline-block;
+      width: 3px; height: 3px;
+      border-radius: 50%;
+      background: hsl(0 0% 100% / 0.18);
+      flex-shrink: 0;
+    }
+
+    /* ── Focus styles ── */
+    .btn:focus-visible {
+      outline: 2px solid var(--sc-green);
+      outline-offset: 3px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+
+<!-- Header -->
+<header>
+  <span class="logo-sc">
+    <svg width="260" height="97" viewBox="0 0 260 97" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path fill-rule="evenodd" clip-rule="evenodd" d="M33.0469 38.1321H36.2273V56.0638C35.0424 55.7352 33.9259 55.3981 33.0469 54.9899V38.1321Z" fill="white"/>
+      <path fill-rule="evenodd" clip-rule="evenodd" d="M37.0586 34.5333H40.239V56.7435C39.165 56.6756 38.1 56.5051 37.0586 56.2343V34.5333Z" fill="white"/>
+      <path fill-rule="evenodd" clip-rule="evenodd" d="M41.0693 31.4098H44.2497V56.3253C43.2113 56.5991 42.1432 56.7448 41.0693 56.7591V31.4098Z" fill="white"/>
+      <path fill-rule="evenodd" clip-rule="evenodd" d="M45.0801 29.6447H48.2605V54.9712C47.2318 55.4377 46.1684 55.8239 45.0801 56.1261V29.6447Z" fill="white"/>
+      <path fill-rule="evenodd" clip-rule="evenodd" d="M40.6537 16.6528C27.5424 16.6528 16.9131 27.3291 16.9131 40.5001C16.9131 52.9557 26.4201 63.1796 38.5429 64.2535C38.5429 64.2535 39.082 64.299 39.7931 64.299C40.5043 64.299 40.7646 64.2834 40.7646 64.2834V73.9554L55.7563 58.9054C58.4648 56.6645 60.6443 53.8524 62.1387 50.6705C63.633 47.4885 64.4052 44.0155 64.4 40.5001C64.3943 27.3291 53.765 16.6528 40.6537 16.6528ZM40.6195 60.1528C29.7115 60.1528 21.2129 51.4252 21.2129 40.6665C21.2129 29.9078 29.9021 21.1802 40.6195 21.1802C51.337 21.1802 60.0234 29.895 60.0234 40.6594C60.0234 51.4238 51.337 60.1528 40.6195 60.1528Z" fill="white"/>
+      <path d="M118.503 35.4721C117.691 35.4721 117.454 35.7353 117.454 36.1833C117.454 37.8774 122.894 36.9699 122.894 41.1943C122.894 43.7005 121.153 45.2765 118.121 45.2765C116.593 45.2765 114.991 44.7274 114.184 44.2495L114.852 41.9581C114.852 41.9581 116.451 42.7703 118.025 42.7703C119.123 42.7703 119.816 42.3436 119.816 41.5285C119.816 39.1177 114.374 40.4547 114.374 36.5887C114.374 34.2731 115.878 32.9603 118.455 32.9603C119.696 32.9529 120.927 33.1797 122.083 33.6288L121.583 36.1108C121.611 36.1165 120.007 35.4721 118.503 35.4721Z" fill="white"/>
+      <path d="M112.18 38.2613C112.18 34.6343 110.199 32.963 107.455 32.963C104.017 32.963 102.133 35.088 102.133 39.2214C102.133 43.3974 104.066 45.2835 107.741 45.2835C109.101 45.2835 110.223 45.0687 111.941 44.4002L111.417 42.2752C110.008 42.6578 108.983 42.8441 108.003 42.8441C106.381 42.8441 105.188 42.0562 105.188 40.1004H112.082C112.149 39.4896 112.181 38.8757 112.18 38.2613ZM109.193 37.9043H105.164C105.188 36.5673 105.76 35.3028 107.216 35.3028C108.647 35.3028 109.196 36.3767 109.196 37.7379L109.193 37.9043Z" fill="white"/>
+      <path d="M99.1481 28.4329H96.0459V45.1385H99.1481V28.4329Z" fill="white"/>
+      <path d="M88.3142 32.9659C86.7015 32.9786 85.1 33.2366 83.565 33.7312L84.0898 35.8306C85.2446 35.5431 86.4275 35.3833 87.6173 35.3541C89.0254 35.3541 89.5986 36.3312 89.5986 37.6199H88.62C84.801 37.6199 83.0586 39.1233 83.0586 41.4603C83.0586 43.8228 84.8963 45.3006 86.8534 45.3006C88.0937 45.3006 88.8106 44.918 89.8845 43.9394L90.361 45.1328H92.6524V37.0239C92.6581 34.5632 91.5131 32.9659 88.3142 32.9659ZM89.5559 41.5584C88.7025 42.4659 88.172 42.8471 87.5276 42.8471C86.7638 42.8471 86.239 42.2027 86.239 41.3436C86.239 40.4604 86.6444 39.9113 88.5304 39.9113H89.5559V41.5584Z" fill="white"/>
+      <path d="M76.8827 35.4722C76.072 35.4722 75.833 35.7353 75.833 36.1834C75.833 37.8774 81.275 36.9699 81.275 41.1943C81.275 43.7005 79.5326 45.2765 76.5015 45.2765C74.9739 45.2765 73.3724 44.7275 72.5645 44.2496L73.2315 41.9596C73.2315 41.9596 74.8317 42.7717 76.4062 42.7717C77.5043 42.7717 78.197 42.345 78.197 41.53C78.197 39.1191 72.755 40.4561 72.755 36.5902C72.755 34.2746 74.2585 32.9617 76.8358 32.9617C78.0761 32.9541 79.3067 33.181 80.4628 33.6302L79.9621 36.1123C79.9863 36.1165 78.3876 35.4722 76.8827 35.4722Z" fill="white"/>
+      <path d="M238.785 52.4494C237.974 52.4494 237.735 52.7126 237.735 53.1606C237.735 54.8546 243.175 53.9472 243.175 58.1716C243.175 60.6778 241.433 62.2538 238.403 62.2538C236.876 62.2538 235.274 61.7047 234.465 61.2268L235.133 58.9354C235.133 58.9354 236.732 59.7476 238.307 59.7476C239.405 59.7476 240.097 59.3209 240.097 58.5058C240.097 56.0949 234.655 57.432 234.655 53.566C234.655 51.2504 236.159 49.9376 238.736 49.9376C239.977 49.9302 241.208 50.157 242.365 50.6061L241.863 53.0881C241.887 53.0938 240.288 52.4494 238.785 52.4494Z" fill="white"/>
+      <path d="M228.331 62.1158V54.9798C228.331 53.7623 227.878 52.7837 226.78 52.7837C226.135 52.7837 225.371 53.1421 224.49 53.8817V62.1158H221.36V50.1822H223.986L224.488 51.2561C225.895 50.2064 226.731 49.9432 228.02 49.9432C230.072 49.9432 231.48 51.2803 231.48 54.1435V62.1087L228.331 62.1158Z" fill="white"/>
+      <path d="M212.986 49.9432C209.478 49.9432 207.616 52.3541 207.616 56.149C207.616 59.9438 209.478 62.2822 212.986 62.2822C216.709 62.2822 218.642 59.9438 218.642 56.149C218.642 52.3541 216.47 49.9432 212.986 49.9432ZM213.153 59.7291C211.411 59.7291 210.743 58.3209 210.743 56.1248C210.743 53.9287 211.363 52.4736 213.129 52.4736C214.872 52.4736 215.469 53.8817 215.469 56.1248C215.469 58.2968 214.967 59.7291 213.153 59.7291Z" fill="white"/>
+      <path d="M205.014 45.4088H201.912V48.3915H205.014V45.4088Z" fill="white"/>
+      <path d="M205.014 50.1823H201.912V62.1158H205.014V50.1823Z" fill="white"/>
+      <path d="M196.713 58.0108C196.713 59.2041 197.071 59.6095 197.691 59.6095C198.085 59.6118 198.478 59.564 198.86 59.4673L199.362 61.9493C198.713 62.1535 198.037 62.2586 197.357 62.2608C195.592 62.2608 193.635 61.6634 193.635 59.5398V52.8078H192.417V50.1821H193.659V46.7684H196.737V50.1821H199.243V52.8078H196.713V58.0108Z" fill="white"/>
+      <path d="M186.019 49.9432C184.406 49.956 182.805 50.2135 181.27 50.707L181.795 52.8079C182.951 52.5196 184.135 52.3593 185.326 52.33C186.734 52.33 187.308 53.3085 187.308 54.5972H186.329C182.51 54.5972 180.768 56.1006 180.768 58.4376C180.768 60.8001 182.605 62.2779 184.562 62.2779C185.804 62.2779 186.52 61.8967 187.593 60.9182L188.071 62.1115H190.363V54.0041C190.363 51.5434 189.216 49.9432 186.019 49.9432ZM187.259 58.5357C186.406 59.4418 185.875 59.8244 185.231 59.8244C184.467 59.8244 183.942 59.18 183.942 58.3209C183.942 57.4376 184.348 56.8886 186.234 56.8886H187.259V58.5357Z" fill="white"/>
+      <path d="M175.781 52.283C173.68 52.283 173.49 54.3824 173.49 56.0536C173.49 58.9652 174.564 59.8243 176.497 59.8243C177.303 59.8301 178.106 59.7258 178.883 59.5142L179.266 61.662C177.929 62.0446 177.141 62.2594 175.972 62.2594C171.867 62.2594 170.388 59.9836 170.388 56.1433C170.388 52.3029 172.201 49.9375 175.709 49.9375C176.892 49.951 178.067 50.1428 179.194 50.5064L178.071 52.6784C177.38 52.4736 176.95 52.283 175.781 52.283Z" fill="white"/>
+      <path d="M167.713 45.4088H164.611V48.3915H167.713V45.4088Z" fill="white"/>
+      <path d="M167.713 50.1823H164.611V62.1158H167.713V50.1823Z" fill="white"/>
+      <path d="M157.691 62.1158V54.9798C157.691 53.7623 157.237 52.7837 156.139 52.7837C155.495 52.7837 154.731 53.1421 153.848 53.8817V62.1158H150.719V50.1822H153.344L153.845 51.2561C155.253 50.2064 156.088 49.9432 157.377 49.9432C159.429 49.9432 160.839 51.2803 160.839 54.1435V62.1087L157.691 62.1158Z" fill="white"/>
+      <path d="M144.227 62.1158L143.725 60.9694C142.317 62.0205 141.482 62.2595 140.193 62.2595C138.141 62.2595 136.732 60.9467 136.732 58.082V50.1823H139.883V57.4861C139.883 58.7022 140.337 59.6808 141.433 59.6808C142.079 59.6808 142.843 59.3238 143.725 58.5827V50.1823H146.854V62.1158H144.227Z" fill="white"/>
+      <path d="M129.984 62.1157V55.0452C129.984 53.8277 129.603 52.8491 128.671 52.8491C128.027 52.8491 127.287 53.2075 126.428 53.9471V62.1101H123.319V55.0452C123.319 53.8277 122.962 52.8491 122.03 52.8491C121.41 52.8491 120.646 53.2075 119.86 53.876V62.1101H116.73V50.1765H119.356L119.762 51.2503C121.17 50.2006 122.006 49.9375 123.295 49.9375C124.559 49.9375 125.442 50.5818 125.943 51.5846C127.781 50.2248 128.664 49.9375 129.906 49.9375C131.815 49.9375 133.103 51.3456 133.103 54.2046V62.1044L129.984 62.1157Z" fill="white"/>
+      <path d="M109.746 62.1157V55.0452C109.746 53.8277 109.364 52.8491 108.434 52.8491C107.789 52.8491 107.05 53.2075 106.19 53.9471V62.1101H103.088V55.0452C103.088 53.8277 102.73 52.8491 101.798 52.8491C101.178 52.8491 100.414 53.2075 99.6263 53.876V62.1101H96.4971V50.1765H99.1227L99.5281 51.2503C100.936 50.2006 101.773 49.9375 103.061 49.9375C104.326 49.9375 105.209 50.5818 105.71 51.5846C107.547 50.2248 108.431 49.9375 109.672 49.9375C111.581 49.9375 112.87 51.3456 112.87 54.2046V62.1044L109.746 62.1157Z" fill="white"/>
+      <path d="M88.1233 49.9432C84.6158 49.9432 82.7539 52.3541 82.7539 56.149C82.7539 59.9438 84.6158 62.2822 88.1233 62.2822C91.847 62.2822 93.78 59.9438 93.78 56.149C93.78 52.3541 91.6081 49.9432 88.1233 49.9432ZM88.2911 59.7291C86.5488 59.7291 85.8731 58.3209 85.8731 56.1248C85.8731 53.9287 86.4933 52.4736 88.2599 52.4736C90.0023 52.4736 90.5982 53.8817 90.5982 56.1248C90.6039 58.2968 90.1047 59.7291 88.2911 59.7291Z" fill="white"/>
+      <path d="M77.9566 52.283C75.8572 52.283 75.6666 54.3824 75.6666 56.0536C75.6666 58.9652 76.7405 59.8243 78.6735 59.8243C79.4795 59.8301 80.2824 59.7257 81.0602 59.5142L81.4414 61.662C80.1058 62.0446 79.3178 62.2594 78.1486 62.2594C74.0437 62.2594 72.5645 59.9836 72.5645 56.1433C72.5645 52.3029 74.3765 49.9375 77.8855 49.9375C79.0691 49.951 80.2439 50.1428 81.3703 50.5064L80.248 52.6784C79.5568 52.4736 79.1272 52.283 77.9566 52.283Z" fill="white"/>
+    </svg>
+  </span>
+  <span class="game-badge">HubSpot Hunter</span>
+</header>
+
+<!-- HUD -->
+<div class="hud">
+  <div class="hud-item">
+    <div class="hud-label">Time</div>
+    <div class="hud-value" id="hud-timer">60</div>
+    <div class="timer-bar-track"><div id="timer-bar-fill"></div></div>
+  </div>
+  <div class="hud-divider"></div>
+  <div class="hud-item">
+    <div class="hud-label">Score</div>
+    <div class="hud-value" id="hud-score">0</div>
+  </div>
+  <div class="hud-divider"></div>
+  <div class="hud-item">
+    <div class="hud-label">Combo</div>
+    <div class="hud-value" id="hud-combo">×1</div>
+  </div>
+  <div class="hud-divider"></div>
+  <div class="hud-item">
+    <div class="hud-label">Best Score</div>
+    <div class="hud-value" id="hud-best">—</div>
+  </div>
+</div>
+
+<!-- Game area -->
+<div id="game-area">
+
+  <!-- Start overlay -->
+  <div class="overlay" id="start-screen">
+    <div class="overlay-eyebrow">Presented by Sales Communications</div>
+    <h2>HubSpot Hunter</h2>
+    <p class="tagline">Can you hunt the HubSpot logo faster than your colleagues?<br>You have <strong style="color:#fff">60 seconds</strong> — set a record!</p>
+
+    <div class="instructions">
+      <div class="instr-card">
+        <div class="instr-icon">🖱️</div>
+        <div class="instr-title">Click the logo</div>
+        <div class="instr-desc">Hunt the logo and click it — every hit scores points</div>
+      </div>
+      <div class="instr-card highlight">
+        <div class="instr-icon">⚡</div>
+        <div class="instr-title">Build your combo</div>
+        <div class="instr-desc">Consecutive hits multiply your score ×2, ×3… up to ×10</div>
+      </div>
+      <div class="instr-card">
+        <div class="instr-icon">💨</div>
+        <div class="instr-title">Logo escapes!</div>
+        <div class="instr-desc">If you don't click within 2 seconds, the logo moves and your combo resets</div>
+      </div>
+    </div>
+
+    <div class="tip-pill">⚠️ Missing resets your combo — aim carefully!</div>
+    <button class="btn" id="start-btn">Start hunting &nbsp;→</button>
+  </div>
+
+  <!-- End overlay -->
+  <div class="overlay hidden" id="end-screen">
+    <div id="end-badge" class="record-badge" style="display:none">🏆 New Record!</div>
+    <h2 id="end-title">Time's up!</h2>
+    <div class="results-row" id="results-row"></div>
+    <button class="btn" id="restart-btn">Play again &nbsp;→</button>
+  </div>
+
+  <!-- In-game hint strip (ticker) -->
+  <div id="ingame-hints">
+    <div class="hint-track">
+      <div class="hint-item">🖱️ <b>Click the logo</b> fast — it moves quickly!</div>
+      <span class="hint-sep"></span>
+      <div class="hint-item">⚡ Consecutive hits build <b>combo ×2, ×3… up to ×10</b></div>
+      <span class="hint-sep"></span>
+      <div class="hint-item">💨 Logo <b>escapes every 2 seconds</b> — and resets your combo!</div>
+      <span class="hint-sep"></span>
+      <div class="hint-item">❌ <b>Missing resets the combo</b> — aim carefully</div>
+      <span class="hint-sep"></span>
+      <div class="hint-item">🏆 <b>Combo ×10</b> gives 10× points for every hit!</div>
+      <span class="hint-sep"></span>
+      <!-- duplicate for seamless loop -->
+      <div class="hint-item">🖱️ <b>Click the logo</b> fast — it moves quickly!</div>
+      <span class="hint-sep"></span>
+      <div class="hint-item">⚡ Consecutive hits build <b>combo ×2, ×3… up to ×10</b></div>
+      <span class="hint-sep"></span>
+      <div class="hint-item">💨 Logo <b>escapes every 2 seconds</b> — and resets your combo!</div>
+      <span class="hint-sep"></span>
+      <div class="hint-item">❌ <b>Missing resets the combo</b> — aim carefully</div>
+      <span class="hint-sep"></span>
+      <div class="hint-item">🏆 <b>Combo ×10</b> gives 10× points for every hit!</div>
+      <span class="hint-sep"></span>
+    </div>
+  </div>
+
+  <!-- HubSpot logo target — accurate sprocket shape -->
+  <div id="hs-target">
+    <!-- Escape countdown ring -->
+    <!-- First-click tooltip -->
+    <div id="first-hint">👆 Click here!</div>
+    <img src="hubspot-logo.png" alt="HubSpot" draggable="false">
+  </div>
+
+</div>
+
+<script>
+(function () {
+  const STORAGE_BEST = 'sc_hs_hunter_best_v2';
+  const STORAGE_PREV = 'sc_hs_hunter_prev_v2';
+  const GAME_TIME    = 60;
+  const AUTO_MOVE_MS = 2000;
+  const TARGET_W     = 72;
+  const TARGET_H     = 72;
+
+  const gameArea      = document.getElementById('game-area');
+  const target        = document.getElementById('hs-target');
+  const hudTimer      = document.getElementById('hud-timer');
+  const hudScore      = document.getElementById('hud-score');
+  const hudCombo      = document.getElementById('hud-combo');
+  const hudBest       = document.getElementById('hud-best');
+  const startScreen   = document.getElementById('start-screen');
+  const endScreen     = document.getElementById('end-screen');
+  const endTitle      = document.getElementById('end-title');
+  const endBadge      = document.getElementById('end-badge');
+  const resultsRow    = document.getElementById('results-row');
+  const startBtn      = document.getElementById('start-btn');
+  const restartBtn    = document.getElementById('restart-btn');
+  const timerBarFill  = document.getElementById('timer-bar-fill');
+  const firstHint     = document.getElementById('first-hint');
+  const ingameHints   = document.getElementById('ingame-hints');
+
+  let score, combo, timeLeft, running, clickCount, hitIndex;
+  let timerInterval, autoMoveTimeout;
+
+  const HIT_MESSAGES = [
+    'Hit! 🎯', 'Bullseye! 💥', 'Brilliant! ⭐', 'Nailed it! 👊',
+    'Awesome! 🔥', 'Yeah! 💪', 'Boom! 💫', 'Great! 🚀',
+    'Sick! 😎', 'Master! 🏆'
+  ];
+
+  function getSavedBest() { return parseInt(localStorage.getItem(STORAGE_BEST) || '0'); }
+  function getSavedPrev() { return parseInt(localStorage.getItem(STORAGE_PREV) || '-1'); }
+
+  const initBest = getSavedBest();
+  hudBest.textContent = initBest > 0 ? initBest : '—';
+  if (initBest > 0) hudBest.style.color = 'var(--sc-gray-30)';
+
+  // ── Timer bar ────────────────────────────────────────────────────
+  function updateTimerBar() {
+    const pct = (timeLeft / GAME_TIME) * 100;
+    timerBarFill.style.width = pct + '%';
+    if (pct <= 16)      timerBarFill.style.background = '#FF5C5C';
+    else if (pct <= 35) timerBarFill.style.background = 'var(--sc-orange)';
+    else                timerBarFill.style.background = 'var(--sc-green)';
+  }
+
+  // ── Game lifecycle ──────────────────────────────────────────────────────────
+  function startGame() {
+    score      = 0;
+    combo      = 1;
+    timeLeft   = GAME_TIME;
+    running    = true;
+    clickCount = 0;
+    hitIndex   = 0;
+    hudScore.textContent = '0';
+    hudTimer.textContent = GAME_TIME;
+    hudTimer.style.color = 'var(--sc-orange)';
+    hudTimer.classList.remove('timer-urgent');
+    timerBarFill.style.width = '100%';
+    timerBarFill.style.background = 'var(--sc-green)';
+    updateComboHUD();
+
+    startScreen.classList.add('hidden');
+    endScreen.classList.add('hidden');
+    target.style.display = 'block';
+    ingameHints.classList.add('visible');
+
+    // Show first-click tooltip briefly
+    firstHint.style.display = 'block';
+    setTimeout(() => { firstHint.style.display = 'none'; }, 2000);
+
+    placeTarget();
+    scheduleAutoMove();
+    timerInterval = setInterval(tick, 1000);
+  }
+
+  function tick() {
+    timeLeft--;
+    hudTimer.textContent = timeLeft;
+    updateTimerBar();
+    if (timeLeft <= 10) hudTimer.classList.add('timer-urgent');
+    if (timeLeft <= 0)  endGame();
+  }
+
+  function endGame() {
+    running = false;
+    clearInterval(timerInterval);
+    clearTimeout(autoMoveTimeout);
+    target.style.display = 'none';
+    ingameHints.classList.remove('visible');
+
+    const prev    = getSavedPrev();
+    const oldBest = getSavedBest();
+    const current = score;
+    const isNew   = current > oldBest;
+    const newBest = isNew ? current : oldBest;
+
+    localStorage.setItem(STORAGE_PREV, current);
+    if (isNew) localStorage.setItem(STORAGE_BEST, current);
+
+    const bestVal = newBest > 0 ? newBest : '—';
+    hudBest.textContent = bestVal;
+    if (newBest > 0) hudBest.style.color = 'var(--sc-gray-30)';
+
+    const prevDelta = prev >= 0 ? current - prev : null;
+    let prevDeltaHtml = '';
+    if (prevDelta !== null) {
+      const cls  = prevDelta > 0 ? 'up' : prevDelta < 0 ? 'down' : 'same';
+      const sign = prevDelta > 0 ? '+' : '';
+      prevDeltaHtml = `<div class="r-delta ${cls}">${sign}${prevDelta} from previous</div>`;
+    } else {
+      prevDeltaHtml = `<div class="r-delta same">First game</div>`;
+    }
+
+    resultsRow.innerHTML = `
+      <div class="r-card hero">
+        <div class="r-label">Score</div>
+        <div class="r-value">${current}</div>
+        ${prevDeltaHtml}
+      </div>
+      <div class="r-card">
+        <div class="r-label">Previous</div>
+        <div class="r-value">${prev >= 0 ? prev : '—'}</div>
+      </div>
+      <div class="r-card">
+        <div class="r-label">Best Score</div>
+        <div class="r-value">${newBest > 0 ? newBest : '—'}</div>
+        ${isNew ? '<div class="r-delta up">↑ New!</div>' : ''}
+      </div>`;
+
+    endTitle.textContent = isNew ? '🎉 New Record!' : "Time's up!";
+    endBadge.style.display = isNew ? 'block' : 'none';
+    endScreen.classList.remove('hidden');
+  }
+
+  // ── Target movement ─────────────────────────────────────────────
+  function placeTarget() {
+    const HINT_H = 36; // hint strip height
+    const aW = gameArea.clientWidth  - TARGET_W - 16;
+    const aH = gameArea.clientHeight - TARGET_H - 16 - HINT_H;
+    target.style.left = (10 + Math.random() * aW) + 'px';
+    target.style.top  = (10 + Math.random() * aH) + 'px';
+  }
+
+  function scheduleAutoMove() {
+    clearTimeout(autoMoveTimeout);
+    if (!running) return;
+    autoMoveTimeout = setTimeout(() => {
+      if (!running) return;
+      if (combo > 1) { combo = 1; updateComboHUD(); }
+      placeTarget();
+        scheduleAutoMove();
+    }, AUTO_MOVE_MS);
+  }
+
+  // ── Click handlers ───────────────────────────────────────────────
+  target.addEventListener('click', function (e) {
+    if (!running) return;
+    e.stopPropagation();
+
+    const pts = 10 * combo;
+    score += pts;
+    hudScore.textContent = score;
+
+    const rect  = target.getBoundingClientRect();
+    const aRect = gameArea.getBoundingClientRect();
+    const px    = rect.left - aRect.left + TARGET_W / 2;
+    const py    = rect.top  - aRect.top;
+
+    // Points popup
+    spawnPopup(px, py - 10, '+' + pts, 'pts');
+
+    // Combo popup
+    if (combo >= 2) spawnPopup(px + 32, py + 8, '×' + combo + ' COMBO', 'combo');
+
+    // Congratulation message — rotates through 10
+    const congrats = HIT_MESSAGES[hitIndex % HIT_MESSAGES.length];
+    hitIndex++;
+    spawnPopup(px - 20, py - 36, congrats, 'congrats');
+
+    combo = Math.min(combo + 1, 10);
+    updateComboHUD();
+
+    target.classList.remove('target-pop');
+    void target.offsetWidth;
+    target.classList.add('target-pop');
+    setTimeout(() => target.classList.remove('target-pop'), 250);
+
+    clickCount++;
+
+    // Move logo
+    firstHint.style.display = 'none';
+    placeTarget();
+    scheduleAutoMove();
+  });
+
+  gameArea.addEventListener('click', function (e) {
+    if (!running) return;
+
+    // Miss message — contextual
+    const aRect = gameArea.getBoundingClientRect();
+    const mx = e.clientX - aRect.left;
+    const my = e.clientY - aRect.top;
+
+    const lostCombo = combo;
+    combo = 1;
+    updateComboHUD();
+
+    let missText;
+    if (lostCombo >= 5)      missText = `Combo ×${lostCombo} broken! 😬`;
+    else if (lostCombo >= 3) missText = `Combo ×${lostCombo} gone! 😅`;
+    else if (lostCombo >= 2) missText = 'Combo broken! 😤';
+    else                     missText = "Logo's not there! 🙈";
+
+    spawnPopup(mx, my, missText, 'miss-msg');
+
+    gameArea.classList.remove('area-miss');
+    void gameArea.offsetWidth;
+    gameArea.classList.add('area-miss');
+  });
+
+  // ── Keyboard support ──────────────────────────────────────────────
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    e.preventDefault();
+    if (running) return;
+    startGame();
+  });
+
+  // ── UI helpers ────────────────────────────────────────────────────
+  function updateComboHUD() {
+    hudCombo.textContent = '×' + combo;
+    hudCombo.classList.remove('combo-x2', 'combo-x3', 'combo-big');
+    if      (combo >= 5) hudCombo.classList.add('combo-big');
+    else if (combo >= 3) hudCombo.classList.add('combo-x3');
+    else if (combo >= 2) hudCombo.classList.add('combo-x2');
+    else                 hudCombo.style.cssText = '';
+  }
+
+  function spawnPopup(x, y, text, type) {
+    const el = document.createElement('div');
+    el.className = 'popup ' + type;
+    el.textContent = text;
+    el.style.left = (x - 20) + 'px';
+    el.style.top  = y + 'px';
+    gameArea.appendChild(el);
+    setTimeout(() => el.remove(), 800);
+  }
+
+  startBtn.addEventListener('click',   startGame);
+  restartBtn.addEventListener('click', startGame);
+})();
+</script>
+</body>
+</html>
