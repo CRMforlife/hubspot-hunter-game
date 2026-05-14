@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 1200px; height: 630px; overflow: hidden; }
+
+    body {
+      background: #1D1D1F;
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+      position: relative;
+    }
+
+    /* Grain */
+    body::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+      opacity: 0.04;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    /* Orbs */
+    .orb { position: absolute; border-radius: 50%; filter: blur(90px); }
+    .orb-1 { width: 600px; height: 600px; background: hsl(149 100% 32% / 0.18); top: -200px; left: -150px; }
+    .orb-2 { width: 500px; height: 500px; background: hsl(17 92% 64% / 0.12); bottom: -200px; right: -100px; }
+    .orb-3 { width: 300px; height: 300px; background: hsl(149 100% 32% / 0.08); bottom: 50px; left: 300px; }
+
+    /* Layout */
+    .inner {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      padding: 0 80px;
+      gap: 80px;
+    }
+
+    /* Left */
+    .left {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: #00A354;
+    }
+
+    .brand-name {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #00A354;
+    }
+
+    h1 {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 84px;
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      line-height: 0.95;
+      color: #fff;
+    }
+
+    h1 span { color: #00A354; }
+
+    .tagline {
+      font-size: 22px;
+      font-weight: 500;
+      color: #B6B6B8;
+      letter-spacing: -0.01em;
+      line-height: 1.5;
+      max-width: 420px;
+    }
+
+    .pills {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 8px 18px;
+      border-radius: 100px;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    .pill-green {
+      background: hsl(149 100% 32% / 0.15);
+      border: 1px solid hsl(149 100% 32% / 0.35);
+      color: #fff;
+    }
+
+    .pill-orange {
+      background: hsl(17 92% 64% / 0.12);
+      border: 1px solid hsl(17 92% 64% / 0.3);
+      color: #F07A4F;
+    }
+
+    /* Right — logo visual */
+    .right {
+      width: 340px;
+      height: 340px;
+      flex-shrink: 0;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .logo-glow {
+      position: absolute;
+      inset: -40px;
+      background: radial-gradient(circle, hsl(17 92% 64% / 0.22) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+
+    .logo-ring {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      border: 1px solid hsl(17 92% 64% / 0.15);
+    }
+
+    .logo-ring-2 {
+      position: absolute;
+      inset: 20px;
+      border-radius: 50%;
+      border: 1px dashed hsl(0 0% 100% / 0.06);
+    }
+
+    .logo-img {
+      width: 240px;
+      height: 240px;
+      object-fit: contain;
+      position: relative;
+      z-index: 2;
+      filter: drop-shadow(0 0 32px hsl(17 92% 64% / 0.6)) drop-shadow(0 0 64px hsl(17 92% 64% / 0.3));
+    }
+
+    /* Bottom bar */
+    .bottom-bar {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #00A354 0%, #00cc69 40%, #F07A4F 100%);
+      z-index: 2;
+    }
+
+    /* SC logo small */
+    .sc-logo-wrap {
+      position: absolute;
+      bottom: 28px;
+      right: 80px;
+      z-index: 2;
+      opacity: 0.35;
+    }
+  </style>
+</head>
+<body>
+
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+
+<div class="inner">
+  <div class="left">
+    <div class="brand">
+      <div class="brand-dot"></div>
+      <span class="brand-name">Sales Communications</span>
+    </div>
+
+    <h1>HubSpot<br><span>Hunter</span></h1>
+
+    <p class="tagline">Jahtaa logoa, kasvata comboa<br>ja tee ennätys — 60 sekunnissa.</p>
+
+    <div class="pills">
+      <div class="pill pill-green">🎯 60 sekuntia</div>
+      <div class="pill pill-green">⚡ Combo ×10</div>
+      <div class="pill pill-orange">🏆 Ennätys</div>
+    </div>
+  </div>
+
+  <div class="right">
+    <div class="logo-glow"></div>
+    <div class="logo-ring"></div>
+    <div class="logo-ring-2"></div>
+    <img class="logo-img" src="hubspot-logo.png" alt="HubSpot">
+  </div>
+</div>
+
+<div class="bottom-bar"></div>
+
+</body>
+</html>
