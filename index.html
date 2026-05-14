@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HubSpot Hunter — Sales Communications</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #1D1D1F;
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Grain */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+      opacity: 0.03;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Orbs */
+    .orb { position: fixed; border-radius: 50%; filter: blur(80px); pointer-events: none; z-index: 0; }
+    .orb-1 { width: 500px; height: 500px; background: hsl(149 100% 32% / 0.1); top: -150px; left: -150px; }
+    .orb-2 { width: 350px; height: 350px; background: hsl(17 92% 64% / 0.07); bottom: -100px; right: -100px; }
+
+    .card {
+      position: relative;
+      z-index: 1;
+      background: hsl(0 0% 100% / 0.04);
+      border: 1px solid hsl(0 0% 100% / 0.08);
+      border-radius: 1.5rem;
+      padding: 52px 48px;
+      max-width: 540px;
+      width: 100%;
+      text-align: center;
+      backdrop-filter: blur(12px);
+    }
+
+    .eyebrow {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #00A354;
+      margin-bottom: 16px;
+    }
+
+    h1 {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 3rem;
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      line-height: 1.05;
+      color: #fff;
+      margin-bottom: 14px;
+    }
+
+    .desc {
+      font-size: 15px;
+      font-weight: 400;
+      color: #B6B6B8;
+      line-height: 1.65;
+      letter-spacing: -0.01em;
+      margin-bottom: 40px;
+    }
+
+    .lang-grid {
+      display: flex;
+      gap: 14px;
+    }
+
+    .lang-btn {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      padding: 20px 16px;
+      border-radius: 1rem;
+      border: 1px solid hsl(0 0% 100% / 0.1);
+      background: hsl(0 0% 100% / 0.04);
+      color: #fff;
+      text-decoration: none;
+      transition: background 0.18s, border-color 0.18s, transform 0.15s, box-shadow 0.18s;
+      cursor: pointer;
+    }
+
+    .lang-btn:hover {
+      background: hsl(149 100% 32% / 0.12);
+      border-color: hsl(149 100% 32% / 0.4);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px -8px hsl(149 100% 32% / 0.3);
+    }
+
+    .lang-flag { font-size: 2rem; line-height: 1; }
+
+    .lang-name {
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    .lang-sub {
+      font-size: 11px;
+      font-weight: 400;
+      color: #848485;
+    }
+
+    .footer {
+      position: relative;
+      z-index: 1;
+      margin-top: 28px;
+      font-size: 12px;
+      color: #515152;
+      letter-spacing: -0.01em;
+    }
+
+    .footer a {
+      color: #515152;
+      text-decoration: none;
+    }
+
+    .footer a:hover { color: #00A354; }
+
+    @media (max-width: 480px) {
+      .card { padding: 36px 24px; }
+      h1 { font-size: 2.2rem; }
+      .lang-grid { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+
+<div class="card">
+  <div class="eyebrow">Sales Communications</div>
+  <h1>HubSpot Hunter</h1>
+  <p class="desc">Chase the HubSpot logo, build combos, and beat your high score — in 60 seconds.</p>
+
+  <div class="lang-grid">
+    <a class="lang-btn" href="hubspot-hunter-game.html">
+      <span class="lang-flag">🇫🇮</span>
+      <span class="lang-name">Suomeksi</span>
+      <span class="lang-sub">Pelaa suomeksi</span>
+    </a>
+    <a class="lang-btn" href="hubspot-hunter-game-en.html">
+      <span class="lang-flag">🇬🇧</span>
+      <span class="lang-name">In English</span>
+      <span class="lang-sub">Play in English</span>
+    </a>
+  </div>
+</div>
+
+<p class="footer"><a href="https://salescommunications.fi">salescommunications.fi</a></p>
+
+</body>
+</html>
