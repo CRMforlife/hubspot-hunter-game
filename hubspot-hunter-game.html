@@ -93,6 +93,8 @@
       width: auto;
       display: block;
     }
+    a.logo-sc { text-decoration: none; opacity: 1; transition: opacity 0.15s; }
+    a.logo-sc:hover { opacity: 0.75; }
 
     .game-badge {
       font-family: var(--font-body);
@@ -156,8 +158,9 @@
     #game-area {
       position: relative;
       z-index: 1;
-      width: 812px;
-      height: 460px;
+      width: min(812px, 100%);
+      aspect-ratio: 812 / 460;
+      height: auto;
       background: hsl(240 3% 8%);
       border: 1px solid hsl(0 0% 100% / 0.07);
       border-radius: var(--radius);
@@ -332,6 +335,8 @@
     }
 
     .btn:active { transform: translateY(0); }
+
+    .btn, #hs-target, #game-area { touch-action: manipulation; }
 
     /* ── Results cards (glass) ── */
     .results-row {
@@ -583,6 +588,84 @@
       outline: 2px solid var(--sc-green);
       outline-offset: 3px;
     }
+
+    /* ── Responsive ── */
+    @media (max-width: 860px) {
+      header, .hud {
+        max-width: 100%;
+        padding: 12px 16px;
+      }
+      #game-area {
+        border-left: none;
+        border-right: none;
+        border-radius: 0;
+      }
+    }
+
+    @media (max-width: 600px) {
+      body { overflow-y: auto; }
+
+      .logo-sc svg { height: 56px; }
+
+      .hud {
+        flex-wrap: wrap;
+        gap: 0;
+        padding: 10px 12px;
+      }
+      .hud-item {
+        flex: 1 1 45%;
+        padding: 6px 4px;
+        min-width: 0;
+      }
+      .hud-label { font-size: 9px; margin-bottom: 2px; }
+      .hud-value { font-size: 26px; }
+      .hud-divider { display: none; }
+      .timer-bar-track { display: none; }
+
+      #game-area { aspect-ratio: 4 / 3; }
+
+      #hs-target { width: 84px; height: 84px; }
+
+      .overlay { position: fixed; inset: 0; border-radius: 0; z-index: 999; padding: 24px 20px; gap: 10px; overflow-y: auto; justify-content: flex-start; padding-top: 32px; }
+      .overlay h2 { font-size: 26px; }
+      .overlay .tagline { font-size: 13px; max-width: 100%; }
+
+      .instructions {
+        flex-direction: column;
+        gap: 8px;
+        width: 100%;
+      }
+      .instr-card {
+        flex-direction: row;
+        width: 100%;
+        padding: 10px 12px;
+        gap: 10px;
+        text-align: left;
+        align-items: center;
+      }
+      .instr-icon { font-size: 20px; flex-shrink: 0; }
+      .instr-title { font-size: 12px; }
+      .instr-desc { font-size: 10px; }
+
+      .tip-pill { font-size: 11px; text-align: center; }
+
+      .btn { font-size: 14px; padding: 12px 24px; }
+
+      .results-row { gap: 8px; }
+      .r-card { min-width: 90px; padding: 12px 14px; }
+      .r-value { font-size: 26px; }
+
+      #first-hint { font-size: 11px; }
+
+      .hint-item { font-size: 10.5px; padding: 0 16px; }
+    }
+
+    @media (max-width: 400px) {
+      .overlay h2 { font-size: 22px; }
+      .hud-value { font-size: 22px; }
+      .r-card { min-width: 78px; padding: 10px 10px; }
+      .r-value { font-size: 22px; }
+    }
   </style>
 </head>
 <body>
@@ -592,7 +675,7 @@
 
 <!-- Header -->
 <header>
-  <span class="logo-sc">
+  <a class="logo-sc" href="https://www.salescommunications.fi" target="_blank" rel="noopener">
     <svg width="260" height="97" viewBox="0 0 260 97" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path fill-rule="evenodd" clip-rule="evenodd" d="M33.0469 38.1321H36.2273V56.0638C35.0424 55.7352 33.9259 55.3981 33.0469 54.9899V38.1321Z" fill="white"/>
       <path fill-rule="evenodd" clip-rule="evenodd" d="M37.0586 34.5333H40.239V56.7435C39.165 56.6756 38.1 56.5051 37.0586 56.2343V34.5333Z" fill="white"/>
@@ -621,7 +704,7 @@
       <path d="M88.1233 49.9432C84.6158 49.9432 82.7539 52.3541 82.7539 56.149C82.7539 59.9438 84.6158 62.2822 88.1233 62.2822C91.847 62.2822 93.78 59.9438 93.78 56.149C93.78 52.3541 91.6081 49.9432 88.1233 49.9432ZM88.2911 59.7291C86.5488 59.7291 85.8731 58.3209 85.8731 56.1248C85.8731 53.9287 86.4933 52.4736 88.2599 52.4736C90.0023 52.4736 90.5982 53.8817 90.5982 56.1248C90.6039 58.2968 90.1047 59.7291 88.2911 59.7291Z" fill="white"/>
       <path d="M77.9566 52.283C75.8572 52.283 75.6666 54.3824 75.6666 56.0536C75.6666 58.9652 76.7405 59.8243 78.6735 59.8243C79.4795 59.8301 80.2824 59.7257 81.0602 59.5142L81.4414 61.662C80.1058 62.0446 79.3178 62.2594 78.1486 62.2594C74.0437 62.2594 72.5645 59.9836 72.5645 56.1433C72.5645 52.3029 74.3765 49.9375 77.8855 49.9375C79.0691 49.951 80.2439 50.1428 81.3703 50.5064L80.248 52.6784C79.5568 52.4736 79.1272 52.283 77.9566 52.283Z" fill="white"/>
     </svg>
-  </span>
+  </a>
   <span class="game-badge">HubSpot Hunter</span>
 </header>
 
@@ -886,6 +969,12 @@
   }
 
   // ── Click handlers ───────────────────────────────────────────────
+  // Mobile touch support — fire hit on touchstart for instant response
+  target.addEventListener('touchstart', function (e) {
+    e.preventDefault();
+    target.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+  }, { passive: false });
+
   target.addEventListener('click', function (e) {
     if (!running) return;
     e.stopPropagation();
